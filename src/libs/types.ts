@@ -3,6 +3,11 @@ export type Position = {
   y: number
 }
 
+export type Size = {
+  width: number
+  height: number
+}
+
 export type Direction = 'North' | 'East' | 'South' | 'West'
 
 export type Node = Position & {
