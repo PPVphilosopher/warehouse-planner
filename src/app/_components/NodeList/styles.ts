@@ -5,7 +5,7 @@ export const List = styled.div({
   borderTop: '1px solid lightgray',
 })
 
-export const NodeItem = styled.div<{ active: boolean }>(({ active }) => ({
+export const NodeItem = styled.div<{ selected: boolean }>(({ selected }) => ({
   display: 'flex',
   gap: '5px',
   alignItems: 'center',
@@ -13,5 +13,5 @@ export const NodeItem = styled.div<{ active: boolean }>(({ active }) => ({
   padding: '5px 10px',
   borderBottom: '1px solid lightgray',
   cursor: 'pointer',
-  backgroundColor: active ? 'lightskyblue' : 'unset',
+  backgroundColor: selected ? 'lightskyblue' : 'unset',
 }))

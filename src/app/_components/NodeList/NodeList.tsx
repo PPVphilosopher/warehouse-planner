@@ -17,7 +17,7 @@ export const NodeList = ({ list, selectedNode, onNodeClick }: Props) => {
         <NodeItem
           key={node.id}
           onClick={() => onNodeClick(node)}
-          active={node.id === selectedNode?.id}
+          selected={node.id === selectedNode?.id}
         >
           {node.name ?? node.code}
           {node.charger && (
