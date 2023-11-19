@@ -8,6 +8,7 @@ export type Size = {
   height: number
 }
 
+export type KeyboardDirection = 'Up' | 'Right' | 'Down' | 'Left'
 export type Direction = 'North' | 'East' | 'South' | 'West'
 
 export type Node = Position & {

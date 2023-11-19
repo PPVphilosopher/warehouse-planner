@@ -2,7 +2,7 @@ import styled from 'styled-components'
 
 export const List = styled.div({
   overflow: 'auto',
-  borderTop: '1px solid lightgray',
+  borderTop: '1px solid gray',
 })
 
 export const NodeItem = styled.div<{ selected: boolean }>(({ selected }) => ({

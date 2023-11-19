@@ -1,23 +1,53 @@
 'use client'
 
-import { Map, Node, Position, Size } from '@/libs/types'
-import { Container } from './styles'
-import { Stage, Layer, Rect } from 'react-konva'
-import { useEffect, useMemo, useRef, useState } from 'react'
 import { NODE_BORDER_BUFFER } from '@/libs/constants'
-import { NodeLayer } from './NodeLayer'
+import {
+  Agv,
+  Direction,
+  KeyboardDirection,
+  Map,
+  Node,
+  Position,
+  Size,
+} from '@/libs/types'
+import {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+import { Layer, Rect, Stage } from 'react-konva'
+import { AgvLayer } from './AgvLayer'
 import { EdgeLayer } from './EdgeLayer'
+import { NodeLayer } from './NodeLayer'
+import { Container } from './styles'
 
 type Props = {
   map: Map
   selectedNode?: Node
   onNodeClick?: (node: Node) => void
+  agvList: Record<string, Agv>
+  setAgvList: Dispatch<SetStateAction<Record<string, Agv>>>
+  selectedAgv?: string
+  onAgvClick?: (agv: Agv) => void
+  keyPress?: KeyboardDirection
 }
 
 // north +x
 // west +y
 
-const MapCanvas = ({ map, selectedNode, onNodeClick }: Props) => {
+const MapCanvas = ({
+  map,
+  selectedNode,
+  onNodeClick,
+  agvList,
+  setAgvList,
+  selectedAgv,
+  onAgvClick,
+  keyPress,
+}: Props) => {
   const [ratio, setRatio] = useState(1)
   const [stageSize, setStageSize] = useState<Size>({ width: 1, height: 1 })
   const [stagePosition, setStagePosition] = useState<Position>({ x: 0, y: 0 })
@@ -88,60 +118,128 @@ const MapCanvas = ({ map, selectedNode, onNodeClick }: Props) => {
     return result
   }, [map])
 
-  const connectedNodePositionList: Position[] = useMemo(() => {
-    if (!selectedNode) return []
-
-    const result: Position[] = []
-    selectedNode.directions?.forEach((d) => {
+  const getConnectedNodePositionList = (
+    node: Node
+  ): (Position & { direction: Direction })[] => {
+    const result: (Position & { direction: Direction })[] = []
+    node.directions?.forEach((d) => {
       switch (d) {
         case 'North': // +x
           const nLink = map.nodes
-            .filter((n) => n.y === selectedNode.y && n.x > selectedNode.x)
+            .filter((n) => n.y === node.y && n.x > node.x)
             .map((n) => n.x)
           if (nLink)
             result.push({
               x: Math.min(...nLink),
-              y: selectedNode.y,
+              y: node.y,
+              direction: 'North',
             })
           break
 
         case 'East': // -y
           const eLink = map.nodes
-            .filter((n) => n.x === selectedNode.x && n.y < selectedNode.y)
+            .filter((n) => n.x === node.x && n.y < node.y)
             .map((n) => n.y)
           if (eLink)
             result.push({
-              x: selectedNode.x,
+              x: node.x,
               y: Math.max(...eLink),
+              direction: 'East',
             })
           break
 
         case 'South': // -x
           const sLink = map.nodes
-            .filter((n) => n.y === selectedNode.y && n.x < selectedNode.x)
+            .filter((n) => n.y === node.y && n.x < node.x)
             .map((n) => n.x)
           if (sLink)
             result.push({
               x: Math.max(...sLink),
-              y: selectedNode.y,
+              y: node.y,
+              direction: 'South',
             })
           break
 
         case 'West': // +y
           const wLink = map.nodes
-            .filter((n) => n.x === selectedNode.x && n.y > selectedNode.y)
+            .filter((n) => n.x === node.x && n.y > node.y)
             .map((n) => n.y)
           if (wLink)
             result.push({
-              x: selectedNode.x,
+              x: node.x,
               y: Math.min(...wLink),
+              direction: 'West',
             })
           break
       }
     })
 
     return result
+  }
+
+  const connectedNodePositionList = useMemo(() => {
+    if (!selectedNode) return []
+
+    return getConnectedNodePositionList(selectedNode)
   }, [map, selectedNode])
+
+  useEffect(() => {
+    if (!selectedAgv) return
+
+    setAgvList((prev) => {
+      const newList = { ...prev }
+      const turnMap: Direction[] = ['North', 'West', 'South', 'East']
+
+      switch (keyPress) {
+        case 'Up':
+        case 'Down':
+          const direction =
+            turnMap[
+              (turnMap.indexOf(newList[selectedAgv].heading) +
+                (keyPress === 'Up' ? 0 : 2)) %
+                4
+            ]
+          const position = newList[selectedAgv].position
+          const node = map.nodes.find(
+            (n) => n.x === position.x && n.y === position.y
+          )
+          const connected = getConnectedNodePositionList(node!)
+
+          const nextNode = connected.find((c) => c.direction === direction)
+
+          newList[selectedAgv] = {
+            ...newList[selectedAgv],
+            ...(nextNode && { position: { x: nextNode.x, y: nextNode.y } }),
+            isMoving: true,
+          }
+          break
+
+        case 'Left':
+          newList[selectedAgv] = {
+            ...newList[selectedAgv],
+            heading:
+              turnMap[(turnMap.indexOf(newList[selectedAgv].heading) + 1) % 4],
+          }
+          break
+
+        case 'Right':
+          newList[selectedAgv] = {
+            ...newList[selectedAgv],
+            heading:
+              turnMap[(turnMap.indexOf(newList[selectedAgv].heading) + 3) % 4],
+          }
+          break
+
+        default: // stop
+          newList[selectedAgv] = {
+            ...newList[selectedAgv],
+            isMoving: false,
+          }
+      }
+
+      return newList
+    })
+  }, [keyPress])
 
   return (
     <Container ref={ref}>
@@ -162,6 +260,13 @@ const MapCanvas = ({ map, selectedNode, onNodeClick }: Props) => {
           mapSize={mapSize}
           selectedNode={selectedNode}
           onNodeClick={onNodeClick}
+        />
+        <AgvLayer
+          agvList={agvList}
+          selectedAgv={selectedAgv}
+          onAgvClick={onAgvClick}
+          ratio={ratio}
+          mapSize={mapSize}
         />
       </Stage>
     </Container>

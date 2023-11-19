@@ -1,4 +1,4 @@
-import { Tag } from '@/components'
+import { NodeTag, Tag } from '@/components'
 import { getNodeColor } from '@/libs/helpers'
 import { Node } from '@/libs/types'
 import { List, NodeItem } from './styles'
@@ -20,15 +20,7 @@ export const NodeList = ({ list, selectedNode, onNodeClick }: Props) => {
           selected={node.id === selectedNode?.id}
         >
           {node.name ?? node.code}
-          {node.charger && (
-            <Tag color={getNodeColor(node)}>
-              Charger ({node.charger.direction})
-            </Tag>
-          )}
-          {node.chute && (
-            <Tag color={getNodeColor(node)}>Chute ({node.chute.direction})</Tag>
-          )}
-          {node.spawn && <Tag color={getNodeColor(node)}>Spawn</Tag>}
+          <NodeTag node={node} />
         </NodeItem>
       ))}
     </List>
