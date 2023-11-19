@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  fe:
+    image: philos006/warehouse-planner:0.0.1
+    ports:
+      - "3000:3000"
+  be:
+    image: philos006/warehouse-planner-db:0.0.1
+    ports:
+      - "3002:3002"
