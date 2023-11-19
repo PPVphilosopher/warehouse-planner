@@ -2,6 +2,7 @@ import { Direction, Node } from '@/libs/types'
 import { useEffect } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { Container, Field, Form } from './styles'
+import { MAP_MAX_SIZE } from '@/libs/constants'
 
 type Props = {
   node?: Node
@@ -110,13 +111,23 @@ export const NodeDetail = ({ node, onSave, onCancel, onDelete }: Props) => {
         <Field>
           <label>
             X:
-            <input type='number' {...register('x')} required />
+            <input
+              type='number'
+              max={MAP_MAX_SIZE}
+              {...register('x')}
+              required
+            />
           </label>
         </Field>
         <Field>
           <label>
             Y:
-            <input type='number' {...register('y')} required />
+            <input
+              type='number'
+              max={MAP_MAX_SIZE}
+              {...register('y')}
+              required
+            />
           </label>
         </Field>
         <Field>

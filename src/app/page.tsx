@@ -24,7 +24,10 @@ export default function Home() {
 
   const onSave = useCallback(async (node: Node) => {
     const res = await saveNode(node)
-    if (res) alert(node.id ? 'Node updated' : 'Node added')
+    if (res) {
+      alert(node.id ? 'Node updated' : 'Node added')
+      setSelectedNode(res)
+    }
   }, [])
 
   const onDelete = useCallback(async (id: number) => {

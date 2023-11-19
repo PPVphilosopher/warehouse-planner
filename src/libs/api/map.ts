@@ -32,7 +32,8 @@ export const useSaveNodeMutation = () => {
           body: JSON.stringify(node),
         }
       )
-      return res.json()
+      const data = await res.json()
+      return data as Node
     },
     {
       onSuccess: () => {

@@ -10,6 +10,8 @@ type Props = {
   onNodeClick?: (node: Node) => void
 }
 
+const NODE_DISPLAY_SIZE = 7
+
 export const NodeLayer = ({
   list,
   ratio,
@@ -22,10 +24,12 @@ export const NodeLayer = ({
       {list.map((node) => (
         <Rect
           key={node.id}
-          x={mapSize.width - node.y / ratio - 2}
-          y={mapSize.height - node.x / ratio - 2}
-          width={5}
-          height={5}
+          x={mapSize.width - node.y / ratio - Math.floor(NODE_DISPLAY_SIZE / 2)}
+          y={
+            mapSize.height - node.x / ratio - Math.floor(NODE_DISPLAY_SIZE / 2)
+          }
+          width={NODE_DISPLAY_SIZE}
+          height={NODE_DISPLAY_SIZE}
           fill={getNodeColor(node)}
           stroke={selectedNode?.id === node.id ? 'red' : ''}
           onClick={() => onNodeClick?.(node)}
